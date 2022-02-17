@@ -229,3 +229,58 @@ modified:   Example2.md
 Способы добавления комментария равнозначны - всё зависит от того, какой вариант удобнее пользователю.
 
 Данные, которые не были проиндексированы, не добавляются в коммит и остаются в рабочем каталоге.
+/
+
+****
+****
+Экспресс команды
+
+$ git init
+Initialized empty Git repository in ~/djangogirls/.git/
+$ git config --global user.name "Your Name"
+$ git config --global user.email you@example.com
+
+Git будет отслеживать изменения всех файлов и каталогов в заданной директории, однако некоторые из них мы предпочли бы игнорировать. Для этого нам нужно создать файл .gitignore в корневом каталоге репозитория. Открой редактор и создай новый файл со следующим содержанием:
+
+*.pyc
+__pycache__
+myvenv
+db.sqlite3
+.DS_Store
+И сохрани его как .gitignore в корневом каталоге "djangogirls".
+
+Примечание: Точка в начале имени файла имеет важное значение! Если у тебя есть проблемы с созданием таких файлов (Mac не позволит создать файл с названием, начинающимся с точки, через Finder, например), тогда используй кнопку "Сохранить как" в меню своего редактора кода, это точно поможет.
+
+Используй команду git status перед git add или в любой другой момент, когда ты не уверена, что изменения — хорошая идея. Это убережёт тебя от таких неприятных сюрпризов как добавление неправильных файлов. Команда git status возвращает информацию обо всех ранее неотслеживаемых/изменённых/добавленных в git файлах, а также статус ветки и многое другое. Результат должен быть похож на:
+
+$ git status
+
+И, наконец, мы сохраним наши изменения. Переключись на консоль и набери:
+
+$ git add --all .
+$ git commit -m "My Django Girls app, first commit"
+ [...]
+ 13 files changed, 200 insertions(+)
+ create mode 100644 .gitignore
+ [...]
+ create mode 100644 mysite/wsgi.py
+Загружаем код в репозиторий GitHub
+
+На следующем экране ты можешь найти URL для клонирования репозитория. Выбери вариант "HTTPS", копируй команду и вставь в окно терминала
+
+Теперь нужно связать локальный репозиторий с репозиторием на GitHub.
+
+Напечатай у себя в консоли следующую команду (Замени <your-github-username> именем, указанным при создании аккаунта на GitHub, но без угловых скобок):
+
+$ git remote add origin https://github.com/<your-github-username>/my-first-blog.git
+$ git push -u origin master
+Введи свое имя пользователя и пароль от аккаунта GitHub, и ты должна увидеть что-то подобное:
+
+Username for 'https://github.com': hjwp
+Password for 'https://hjwp@github.com':
+Counting objects: 6, done.
+Writing objects: 100% (6/6), 200 bytes | 0 bytes/s, done.
+Total 3 (delta 0), reused 0 (delta 0)
+To https://github.com/hjwp/my-first-blog.git
+ * [new branch]      master -> master
+Branch master set up to track remote branch master from origin.
