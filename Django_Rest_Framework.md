@@ -1,8 +1,9 @@
 **Django Rest Framework**
 
+
+
 `pip install djangorestframework`
 затем регистрируем DRF в django
-
 в файле settings
 ```
 INSTALLED_APPS = [
