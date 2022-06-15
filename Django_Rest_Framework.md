@@ -1,4 +1,4 @@
-Django Rest Framework
+**Django Rest Framework**
 
 `pip install djangorestframework`
 затем регистрируем DRF в django
@@ -11,7 +11,7 @@ INSTALLED_APPS = [
 ]
 ```
 ***
-Используемая модель
+*Используемая модель*
 ```
 from django.db import models
 from django.contrib.auth.models import User
@@ -36,7 +36,7 @@ class Category(models.Model):
 ```
 
 ***
-Настройки DRF
+**Настройки DRF**
 
 файл settings
 ```
@@ -82,7 +82,7 @@ urlpatterns = [
 ]
 ```
 ***
-метод APIView без автоматического сериализатора
+**метод APIView без автоматического сериализатора**
 
 файл views:
 ```
@@ -107,7 +107,7 @@ class UserProfileAPIView(APIView):  #используя APIView возможно
         return Response({'post' : model_to_dict(post_new)})     #преобразование данных в словарь. необъродимо импортировать из библиотеки Джанго
 ```
 ***
-Класс Serializer
+**Класс Serializer**
 Сериализация - конвертирование языка пайтон в формат JSON
 
 файл urls
@@ -237,7 +237,7 @@ class UserProfileSerializer(serializers.Serializer):    # класс ModelSerial
 
 
 ***
-Класс ModelSerializer и представления ListCreateAPIView
+**Класс ModelSerializer и представления ListCreateAPIView**
 
 Класс ModelSerializer заменяет строки кода представленные выше.
 
@@ -269,7 +269,7 @@ class UserSerializer(serializers.ModelSerializer):
 - RetrieveUpdateDestroyAPIView - чтение, изменение и добавление отдельной записи (GET-, PUT-, PATCH- и DELETE-запросы)
 
 Документация Джанго:
-`www.django-rest-framework.org/api-guide/generic-views/`
+`http://www.django-rest-framework.org/api-guide/generic-views/`
 
 файл views
 ```
@@ -308,7 +308,7 @@ urlpatterns = [
 ```
 
 ***
-Viewsets и ModelViewSet
+**Viewsets и ModelViewSet**
 
 в файле views
 ```
@@ -328,7 +328,7 @@ path('api/v1/profilelist/<int:pk>/', UserProfileViewSet.as_view({ "put" : "updat
 ```
 есть повторяющиеся закономерности, при этом функционал GET и POST запросов разделен, поэтому для систематизации данного функционала используют Routers DRF (GET и POST запросы объеденены в одной страницы).
 
-В документации DRF `www.django-rest-framework.org/api-guide/routers/` сущестувует два типа роутеров: SimpleRouter и DefaultRouter.
+В документации DRF `http://www.django-rest-framework.org/api-guide/routers/` сущестувует два типа роутеров: SimpleRouter и DefaultRouter.
 
 Реализация:
 
@@ -348,7 +348,7 @@ urlpatterns = [
 ```
 при этом если перейти по адресу с указанием конкретной записи (pk) `пример http://127.0.0.1:8000/api/v1/userprofile/5/`, то будет отображена одна запись, в которой добавляются методы PUT и DELETE.
 
-Справочно* если перейти в модуль класса ModelViewSet, то он будет представлен несколькими миксинами:
+***Справочно*** если перейти в модуль класса ModelViewSet, то он будет представлен несколькими миксинами:
 ```
 class ModelViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
@@ -365,7 +365,7 @@ class ModelViewSet(mixins.CreateModelMixin,
 заменив насследование `class UserProfileViewSet(viewsets.ModelViewSet)` на `class UserProfileViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin, GenericViewSet)` и удаляя конкретные миксины в списке можно управлять функционалом форматирвоания данных. Например удалив миксин `mixins.DestroyModelMixin` мы удаляем возможность удалять запись со стороны клиента.
 
 ***
-Роутеры: SimpleRouter и DefaultRouter.
+**Роутеры: SimpleRouter и DefaultRouter.**
 
 router.urls - коллекция/группа маршрутов.
 
@@ -417,8 +417,197 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 Существует возможность создать свой кастомный роутер. Пример есть в документации.
 ***
-Ограничения доступа (permissions)
+**Ограничения доступа (permissions)**
 
+- AllowAny - полный доступ
+- IsAuthenticated - только для авторизованных пользователей
+- IsAdminUser - только для администратора
+- IsAuthenticatedOrReadOnly - только дял атворизованных или всем, но для чтения
+
+Документация Джанго:
+`http://www.django-rest-framework.org/api-guide/permissions/`
+
+файл views
+```
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
+
+# пользователи, созданные дополнительно
+class UserProfileAPIList(generics.ListCreateAPIView):   #запросы GET и POST
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, )      # проверка на авторизованность пользователя, в случае неавторизованного убирает форму POST
+
+class UserProfileAPIUpdate(generics.RetrieveUpdateAPIView):     # запросы  GET, PUT, PATCH
+    queryset = UserProfile.objects.all()        # такой запрос является 'ленивым', он выполниться по вызову и выдаст один результат по запросу, а не все
+    serializer_class = UserProfileSerializer
+    permission_classes = (IsAdminUser, )
+
+class UserProfileAPIDelete(generics.RetrieveDestroyAPIView):     # запросы GET, DELETE
+    queryset = UserProfile.objects.all()        # такой запрос является 'ленивым', он выполниться по вызову и выдаст один результат по запросу, а не все
+    serializer_class = UserProfileSerializer
+    permission_classes = (IsAdminUser, )    #доступ только для авторизованных
+
+```
+
+файл urls
+```
+urlpatterns = [
+    ...
+    path('api/v1/profilelist/', UserProfileAPIList.as_view()),     #объявление api с его версией /v1, затем суть запроса /profilelist
+    path('api/v1/profilelist/<int:pk>/', UserProfileAPIUpdate.as_view()),
+    path('api/v1/profiledelete/<int:pk>/', UserProfileAPIDelete.as_view()),   ]
+```
+
+Для скрытия поля user в форме POST, автоматическое заполнение авторизованным пользователем
+
+файл serializers
+```
+from rest_framework import serializers
+
+class UserProfileSerializer(serializers.ModelSerializer):    # класс ModelSerializer насследуется от базового класса Serializer
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())    #автоматически заполняет форму POST авторизованным пользователем
+
+    class Meta:
+        model = UserProfile
+        #fields = ("username", "discription", "cate", "user")    # либо
+        fields = "__all__"
+```
+
+**Кастомные разрешения / Custom permissions**
+
+2 метода
+```
+class BasePermission(metaclass=BasePermissionMetaclass)
+  def has_permission(self, request, view):    # позволяет настраивать права доступа на уровне всего доступа от клиента
+    return true
+
+  def has_object_permission(self, request, view, obj):    # права доступа на уровне отдельного объекта данных
+    return True
+```
+Создадим отдельный файл для доступа permissions.py
+```
+from rest_framework import permissions
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):    #разрешение на уровне списка записей
+        if request.method in permissions.SAFE_METHODS:      #если метод принадлежи коллекции SAFE_METHODS (GET, HEAF, OPTIONS - запросы только на чтение данных, а не изменение) безопасный, то даем доступ
+            return True #True - доступ предоставлен
+        return bool(request.user and request.user.is_staff)     # а если методы небезопасные, то даем доступ только администратору
+
+#проверка на принадлежность пользвателя как автора записи, например для доступа к редактированию
+class IsOwnerOrReadOnly(permissions.BasePermission):    #класс взят из примеров в документации DRF по CustomPermission
+    def has_object_permission(self, request, view, obj):    #разрешение на уровне одной записи
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user == request.user
+```
+Затем в файле views
+```
+from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+
+class UserProfileAPIUpdate(generics.RetrieveUpdateAPIView):     # запросы PUT и PATCH
+    queryset = UserProfile.objects.all()        # такой запрос является 'ленивым', он выполниться по вызову и выдаст один результат по запросу, а не все
+    serializer_class = UserProfileSerializer
+    permission_classes = (IsOwnerOrReadOnly, )      # разрешение редактировать запись только тому пользователю, кто является автором
+
+class UserProfileAPIDelete(generics.RetrieveDestroyAPIView):     # запросы PUT и PATCH
+    queryset = UserProfile.objects.all()        # такой запрос является 'ленивым', он выполниться по вызову и выдаст один результат по запросу, а не все
+    serializer_class = UserProfileSerializer
+    permission_classes = (IsAdminOrReadOnly, )    #доступ только для авторизованных
+```
+Таким образом неавторизованным пользователям существует доступ для просмотра, но отказано в редактировании.
+
+**Настройки DRF**
+Также в файле settings можно указать дополнительную проверку и настройку для DRF
+```
+REST_FRAMEWORK = {      #настройки DRF
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',     #доступ к данным только авторизованным пользователям, либо .AllowAny - доступ ко всем
+    ]
+}
+```
+В случае если в файле views в классах представления не стоит атрибут permission_classes, то будет работать настройка по умолчанию указанная выше.
+***
+**Авторизация и аутентификация.**
+
+- Session-based authentication - аутентификация на основе сессий и cookies
+- Token-based authentication - аутентификация на основе токенов
+- JSON Web Token (JWT) authentication - аутентификация на основе JWT-токенов
+- Django REST Framework OAuth - авторизация через социальные сети
+
+Документация Джанго:
+`http://www.django-rest-framework.org/api-guide/authentication/`
+
+
+**Session-based authentication - аутентификация на основе сессий и cookies**
+
+в файле urls указываем маршрут для авторизации
+```
+urlpatterns = [
+    ...
+    path('api/v1/drf-auth/', include('rest_framework.urls')),   #аутентификация на основе Session-based
+]
+```
+При этом создается дополнительно два маршрута `api/v1/drf-auth/login` и `api/v1/drf-auth/logout`.
+
+
+**Token-based authentication - аутентификация на основе токенов**
+
+Существует два популярных подхода реализации аутентификации на токенах(сторонние библиотеки):
+- обычная аутентификация токенами (библиотека Djoser)
+- JWT-токены (библиотека Simple JWT)
+
+Djoser
+`https://djoser.readthedocs.io/en/latest/index.html`
+
+`pip install -U djangorestframework_simplejwt`
+```
+INSTALLED_APPS = [
+    ...
+    'rest_framework.authtoken',   #авторизация по токенам
+    'djoser',
+]
+```
+`python manage.py migrate`
+
+```
+from django.urls import ..., re_path
+
+urlpatterns = [
+    ...
+    path('api/v1/auth/', include('djoser.urls')),
+    re_path(r'^auth/', include('djoser.urls.authtoken')),
+]
+```
+**Настройки DRF**
+
+файл settings
+```
+REST_FRAMEWORK = {      #настройки DRF
+    ...
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+}
+```
+По адресу в приложение `api/v1/auth/` станет доступна страница с пользователями, для настройки взаимодействия с ними (добавление, удаления) в документации Djoser необходимо перейти Base Endpoints `https://djoser.readthedocs.io/en/latest/base_endpoints.html`.    *для регистрации методом POST нового пользователя используется адрес `api/v1/auth/users/`
+
+Для авторизации пользователей используется Token Endpoints `https://djoser.readthedocs.io/en/latest/token_endpoints.html`.   *для авторизации методом POST нового пользователя используется адрес `api/v1/auth/token/login/`, после отправик логина и пароля сервер возвращает токен. Затем для работы с ресурсом требуется в отправляемый заголовок Header добавить поле с полученнмы токеном.
+
+при выходе из системы используется адрес `api/v1/auth/token/logout/`, но при  этом нужно указать какой пользователь выходит из системы, т.е. указать  в заголовке токен клиента, полученный при входе.
+
+Для автоматического добавления токена классу представления достаточно указать атрибут authentication_classes
+```
+from rest_framework.authentication import TokenAuthentication
+
+class UserProfileAPIUpdate(generics.RetrieveUpdateAPIView):     # запросы PUT и PATCH
+    queryset = UserProfile.objects.all()        # такой запрос является 'ленивым', он выполниться по вызову и выдаст один результат по запросу, а не все
+    serializer_class = UserProfileSerializer
+    permission_classes = (IsOwnerOrReadOnly, )      # разрешение редактировать запись только тому пользователю, кто является автором
+    authentication_classes = (TokenAuthentication, )  #доступ будет выдаваться не по сессиямм, а по токенам
+```
 
 
 
