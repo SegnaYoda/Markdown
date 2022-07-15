@@ -25,7 +25,8 @@ django-admin startproject name
 Переходим в папку проекта `cd name-project`
 ```
 python manage.py runserver 1.2.3.4:3000
-python manage.py startapp name
+
+
 ```
 
 Для регистрации созданного приложения, файл settings:

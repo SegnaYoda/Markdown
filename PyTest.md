@@ -8,6 +8,7 @@ pytest -s -v -k "not development" tests/first_test.py
 --duration=3  отображение времени прохождения теста, setup время, teardown время, call время. 3 в секундах.
 -vv для более подробного duration
 
+*Рекоменадация*: Для сохранения настроек по pytest использовать плагин `PyTest-testconfig`.
 
 *Валидация объектов и работа с jsonschema*
 создаем директорию над корнем проекта tests, в ней создаем файл с указанием вначале, либо в конце имени _test.py. В нем будут написаны наши тесты.
@@ -316,6 +317,10 @@ def test_calculator(first_value, second_value, result, calculate):
 Для того чтобы запустить все остальные тесты кроме конретно помеченного определенным маркером - `pytest -s -v -k "not development" tests/first_test.py`
 ***
 **Урок для начинающих по PyTest #6 | Создаём красивый allure report для результатов тестов**
+
+*плагин `pytest-html` генерирует HTML отчет о результатах тестов.  `pytest --html=report.html`*
+*Результат выглядит информационно скупо, лучше использовать allure.*
+
 linux: `sudo apt-get install allure`
 windows: `scoop install allure`
 Но сперва необходимо установить Scoop.
@@ -327,6 +332,9 @@ windows: `scoop install allure`
 Далее чтобы сгенирировать html report страницу с подробныи отчетом - `allure serve allureress`, где allureress наша директория с файлами json.
 ! Важно установить Java и перезапустить интерпритатор !
 
+Для соаздания скриншота в отчете:
+try:
+  allure.attach(item.instance.driver.get_screenshoot_as_png()
 ***
 **Урок для начинающих по PyTest #7.1 | простенький и элегантный билдер для генерации данных**
 Генераторы позволят генерировать новые входные данные для тестов.
